@@ -45,8 +45,8 @@ namespace TestTask.Controllers
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "Id,FirstName,LastName,BirthdayDate")] Person person)
+        //[ValidateAntiForgeryToken]
+        public ActionResult Create([Bind(Include = "FirstName,LastName,BirthdayDate")] Person person)
         {
             if (ModelState.IsValid)
             {
@@ -56,6 +56,18 @@ namespace TestTask.Controllers
             }
 
             return View(person);
+        }
+
+        [HttpPost]
+        public JsonResult CreateAndReturn( [Bind( Include = "FirstName,LastName,BirthdayDate" )] Person person )
+        {
+            if ( ModelState.IsValid )
+            {
+                db.People.Add( person );
+                db.SaveChanges();
+                return Json( person, JsonRequestBehavior.AllowGet );
+            }
+            return null;
         }
 
         // GET: Person/Edit/5
@@ -106,7 +118,10 @@ namespace TestTask.Controllers
 
         // POST: Person/Delete/5
         [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
+        // max 20190531: commented out to stop 500 error when ajax request is sent. We can send the token in ajax request and 
+        // uncomment the line (see text on the link).
+        // https://stackoverflow.com/questions/25574410/post-500-internal-server-error-ajax-mvc
+        //[ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int id)
         {
             Person person = db.People.Find(id);

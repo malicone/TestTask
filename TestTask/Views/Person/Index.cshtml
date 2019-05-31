@@ -1,59 +1,48 @@
 ﻿@model IEnumerable<TestTask.Models.Person>
 
 @{
-    ViewBag.Title = "Index";
+    ViewBag.Title = "Persons";
 }
 
-<link rel="stylesheet" href="https://swisnl.github.io/jQuery-contextMenu/css/screen.css" type="text/css" />
-<link rel="stylesheet" href="https://swisnl.github.io/jQuery-contextMenu/css/theme.css" type="text/css" />
-<link rel="stylesheet" href="https://swisnl.github.io/jQuery-contextMenu/css/theme-fixes.css" type="text/css" />
-<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/styles/github.min.css">
-<link href="https://swisnl.github.io/jQuery-contextMenu/dist/jquery.contextMenu.css" rel="stylesheet" type="text/css" />
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-<script src="https://swisnl.github.io/jQuery-contextMenu/dist/jquery.contextMenu.js" type="text/javascript"></script>
-<script src="https://swisnl.github.io/jQuery-contextMenu/dist/jquery.ui.position.min.js" type="text/javascript"></script>
-<script src="https://swisnl.github.io/jQuery-contextMenu/js/main.js" type="text/javascript"></script>
-
-<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/highlight.min.js"></script>
-<script src="https://swisnl.github.io/jQuery-contextMenu/js/theme.js"></script>
-
-
-<a href="#" class="btn btn-primary" data-toggle="modal" data-target="#myModal">Open Modal</a>
-
-<div class="modal fade" id="myModal">
-    <div class="modal-dialog">
+<div class="modal fade" id="person-modal" tabindex="-1" role="dialog" aria-labelledby="personModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
         <div class="modal-content">
-
             <div class="modal-header">
-                <a href="#" class="close" data-dismiss="modal">&times;</a>
-                <h3 class="modal-title">Technotips MVC</h3>
-
+                <h5 class="modal-title" id="personModalLabel">New Person</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
             </div>
             <div class="modal-body">
-
-                <form id="myForm">
-                    
-
+                <form id="person-form">
+                    <div class="form-group">
+                        <label for="firstname" class="col-form-label">First Name:</label>
+                        <input type="text" class="form-control" id="FirstName" name="FirstName">
+                    </div>
+                    <div class="form-group">
+                        <label for="lastname" class="col-form-label">Last Name:</label>
+                        <input type="text" class="form-control" id="LastName" name="LastName">
+                    </div>
+                    <div class="form-group">
+                        <label for="bday" class="col-form-label">B-day:</label>
+                        <input type="date" class="form-control" id="BirthdayDate" name="BirthdayDate" value="1970-12-31">
+                    </div>
+                    <input type="hidden" class="form-control" id="modal-direction">
+                    <input type="hidden" class="form-control" id="modal-base-person-id">
                 </form>
-
             </div>
             <div class="modal-footer">
-                <a href="#" class="btn btn-default" data-dismiss="modal">Cancel</a>
-                <input type="reset" value="Submit" class="btn btn-success" id="btnSubmit" />
-
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="btn-modal-submit">Ok</button>
             </div>
-
         </div>
-
     </div>
-
 </div>
 
 <p>
     @Html.ActionLink( "Create New", "Create" )
 </p>
-<table class="table table-border">
+<table class="table table-bordered" id="table-people">
     <tr>
         <th>
             @Html.DisplayNameFor( model => model.FirstName )
@@ -66,13 +55,12 @@
         </th>
         <th>
             Options
-        </th>
-        <th></th>
+        </th>        
     </tr>
 
     @foreach ( var item in Model )
     {
-        <tr>
+        <tr id="people-row-@item.Id">
             <td>
                 @Html.DisplayFor( modelItem => item.FirstName )
             </td>
@@ -83,60 +71,101 @@
                 @Html.DisplayFor( modelItem => item.BirthdayDate )
             </td>
             <td>
-                <span class="context-menu-one btn btn-link">[options]</span>
-            </td>
-            <td>
-                @Html.ActionLink( "Edit", "Edit", new { id = item.Id } ) |
-                @Html.ActionLink( "Details", "Details", new { id = item.Id } ) |
-                @Html.ActionLink( "Delete", "Delete", new { id = item.Id } )
+                <div class="dropdown">
+                    <button class="btn btn-link" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        [options]
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <a class="dropdown-item" href="#" data-toggle="modal" data-target="#person-modal" data-person-id="@item.Id" data-direction="top">Add Top</a>
+                        <a class="dropdown-item" href="#" data-toggle="modal" data-target="#person-modal" data-person-id="@item.Id" data-direction="bottom">Add Bottom</a>                        
+                        <a class="dropdown-item js-delete" href="#" data-person-id="@item.Id">Delete</a>
+                    </div>
+                </div>
             </td>
         </tr>
     }
 </table>
 
 <script>
-    $(function () {
-        $.contextMenu({
-            selector: '.context-menu-one',
-            trigger: 'left',
-            callback: function (key, options) {
-                var m = "clicked: " + key;
-                window.console && console.log(m) || alert(m);
-            },
-            items: {
-                "Add Top": { name: "AddTop" },
-                "Add Bottom": { name: "AddBottom" },
-                "Delete": { name: "Delete", icon: "delete" }
-            }
-        });
-    });
-</script>
 
-<script>
+    function generatePeopleTableRow(Id, FirstName, LastName, BirthdayDate) {
+        return `
+        < tr >
+            <td>
+                ${FirstName}
+            </td>
+            <td>
+                ${LastName}
+            </td>
+            <td>
+                ${BirthdayDate}
+            </td>
+            <td>
+                <div class="dropdown">
+                    <button class="btn btn-link" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        [options]
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <a class="dropdown-item" href="#" data-toggle="modal" data-target="#person-modal" data-person-id="${Id}" data-direction="top">Add Top</a>
+                        <a class="dropdown-item" href="#" data-toggle="modal" data-target="#person-modal" data-person-id="${Id}" data-direction="bottom">Add Bottom</a>
+                        <a class="dropdown-item js-delete" href="#" data-person-id="5">Delete</a>
+                    </div>
+                </div>
+            </td>
+        </tr >`;
+    }
 
-    $(document).ready(function () {
+    // clear form after insert!
 
+    $(document).ready(function () {        
 
-        $("#btnSubmit").click(function () {
+        $('#person-modal').on('show.bs.modal', function (event) {            
+            var button = $(event.relatedTarget);
+            var direction = button.data('direction');
+            $('#modal-direction').val(direction);    
 
-            $("#loaderDiv").show();
-
-            var myformdata = $("#myForm").serialize();
-
-            $.ajax({
-
-                type: "POST",
-                url: "/Test/Index",
-                data: myformdata,
-                success: function () {
-                    $("#loaderDiv").hide();
-                    $("#myModal").modal("hide");
-
-                }
-
-            })
+            var personId = button.data('person-id');
+            $('#modal-base-person-id').val(personId);    
         })
 
+        $("#btn-modal-submit").click(function () {            
+            var personFormData = $("#person-form").serialize();
+            $.ajax({
+                type: "POST",
+                url: "/Person/CreateAndReturn",
+                data: personFormData,
+                success: function (result) {
+                    var direction = $('#modal-direction').val();
+                    var basePersonId = $('#modal-base-person-id').val();
+                    var row = $('#people-row-' + basePersonId);
+                    if (direction == 'top')
+                        row.before(generatePeopleTableRow(result.Id, result.FirstName, result.LastName, new Date(parseInt(result.BirthdayDate.substr(6))).toLocaleDateString()))
+                    else
+                        row.after(generatePeopleTableRow(result.Id, result.FirstName, result.LastName, new Date(parseInt(result.BirthdayDate.substr(6))).toLocaleDateString() ));                   
+                    $("#person-modal").modal("hide");
+                    console.log(result.Id);
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    alert("Cannot add the record. Error: " + thrownError);
+                }
+            });            
+        })
+
+        $("#table-people .js-delete").on("click", function () {
+            var button = $(this);
+            if (confirm("Are you sure you want to delete the record?")) {                
+                $.ajax({
+                    type: "POST",
+                    url: "/Person/Delete/" + $(this).attr("data-person-id"),
+                    success: function () {
+                        button.parents("tr").remove();
+                    },
+                    error: function (xhr, ajaxOptions, thrownError) {
+                        alert("Cannot delete the record. Error: " + thrownError);
+                    }
+                });
+            };
+        })
     })
 
 </script>

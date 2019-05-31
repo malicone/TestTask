@@ -20,18 +20,15 @@ namespace TestTask
                         "~/Scripts/modernizr-*" ) );
 
             bundles.Add( new ScriptBundle( "~/bundles/bootstrap" ).Include(
-                      "~/Scripts/bootstrap.js" ) );
+                      // max 20190531: change from bootstrap.js to bootstrap.bundle.js fixed dropdown not shown at all and
+                      // items shown in one line.
+                      // https://stackoverflow.com/questions/46026899/bootstrap-4-dropdown-menu-not-working
+                      "~/Scripts/bootstrap.bundle.js",
+                      "~/Scripts/popper.min.js" ) );
 
             bundles.Add( new StyleBundle( "~/Content/css" ).Include(
                       "~/Content/bootstrap.css",
                       "~/Content/site.css" ) );
-
-            bundles.Add( new ScriptBundle( "~/bundles/contextmenu" ).Include(
-                        "~/Scripts/jquery.contextMenu.js",                                                
-                        "~/Scripts/jquery.ui.position.js" ) );
-
-            bundles.Add( new StyleBundle( "~/Content/css/contextmenu" ).Include(
-                      "~/Content/jquery.contextMenu.css" ) );
 
         }
     }
