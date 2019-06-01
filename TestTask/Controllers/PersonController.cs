@@ -17,7 +17,33 @@ namespace TestTask.Controllers
         // GET: Person
         public ActionResult Index()
         {
-            return View(db.People.ToList());
+            if ( db.People.Count() == 0 )
+            {
+                return View( db.People.ToList() );
+            }
+            else
+            {
+                // let's find last element in the list (it's like single linked list)
+                var currentPerson = db.People.FirstOrDefault( p => p.NextId == null );
+                if ( currentPerson == null )// this means we have elements in the list but no last one - it's data consistency error
+                {
+                    // we can return db.People.ToList() (unordered list) but it's better to catch error just it happens
+                    return HttpNotFound( "Last person in the list not found" );
+                }
+                var orderedList = new List<Person>( db.People.Count() );
+                int counter = 0;
+                int maxCounterLimit = db.People.Count();
+                while ( currentPerson != null )
+                {
+                    orderedList.Add( currentPerson );
+                    currentPerson = db.People.FirstOrDefault( p => p.NextId == currentPerson.Id );
+                    counter++;
+                    if ( counter > maxCounterLimit )// to be sure we don't get infinite loop
+                        break;
+                }
+                orderedList.Reverse();
+                return View( orderedList );
+            }
         }
 
         // GET: Person/Details/5
@@ -63,8 +89,50 @@ namespace TestTask.Controllers
         {
             if ( ModelState.IsValid )
             {
-                db.People.Add( person );
-                db.SaveChanges();
+                // transaction ensures we have consistent data (links between records)
+                using ( DbContextTransaction transaction = db.Database.BeginTransaction() )
+                {
+                    try
+                    {
+                        db.People.Add( person );
+                        db.SaveChanges();
+                        if ( db.People.Count() > 1 )
+                        {
+                            // now we setup links between records (to be able show them in defined order)
+                            // it's like single linked list
+                            if ( person.Direction == InsertDirection.Top )
+                            {
+                                person.NextId = person.BasePersonId;
+                                var prevPerson = db.People.FirstOrDefault( p => p.NextId == person.BasePersonId );
+                                if ( prevPerson != null )
+                                {
+                                    prevPerson.NextId = person.Id;
+                                    db.Entry( prevPerson ).State = EntityState.Modified;
+                                }
+                            }
+                            else// Bottom
+                            {
+                                var basePerson = db.People.Single( p => p.Id == person.BasePersonId );                                
+                                var nextPerson = db.People.FirstOrDefault( p => p.Id == basePerson.NextId );
+                                if ( nextPerson != null )
+                                {
+                                    person.NextId = nextPerson.Id;
+                                    db.Entry( nextPerson ).State = EntityState.Modified;
+                                }
+                                basePerson.NextId = person.Id;
+                                db.Entry( basePerson ).State = EntityState.Modified;
+                            }
+                            db.Entry( person ).State = EntityState.Modified;
+                        }
+                        db.SaveChanges();
+                        transaction.Commit();
+                    }
+                    catch ( Exception ex )
+                    {
+                        transaction.Rollback();
+                        Console.WriteLine( "Error occurred: " + ex.Message );
+                    }
+                }
                 return Json( person, JsonRequestBehavior.AllowGet );
             }
             return null;
@@ -124,9 +192,52 @@ namespace TestTask.Controllers
         //[ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int id)
         {
-            Person person = db.People.Find(id);
-            db.People.Remove(person);
-            db.SaveChanges();
+            using ( DbContextTransaction transaction = db.Database.BeginTransaction() )
+            {
+                try
+                {
+                    Person person = db.People.Find( id );
+                    // we have to adjust links between records after removal (to be able show them in defined order).
+                    // it's like single linked list
+                    var prevPerson = db.People.FirstOrDefault( p => p.NextId == person.Id );
+                    var nextPerson = db.People.FirstOrDefault( p => p.Id == person.NextId );
+                    if ( prevPerson != null )
+                    {
+                        if ( nextPerson == null )
+                        {
+                            prevPerson.NextId = null;
+                        }
+                        else
+                        {
+                            prevPerson.NextId = nextPerson.Id;
+                            db.Entry( prevPerson ).State = EntityState.Modified;
+                        }
+                    }
+                    if ( nextPerson != null )
+                    {
+                        if ( prevPerson != null )
+                        {
+                            prevPerson.NextId = nextPerson.Id;
+                            db.Entry( prevPerson ).State = EntityState.Modified;
+                        }
+                    }
+                    db.People.Remove( person );
+                    db.SaveChanges();
+                    if ( db.People.Count() == 1 )
+                    {
+                        var lastPerson = db.People.First();
+                        lastPerson.NextId = null;
+                        db.Entry( lastPerson ).State = EntityState.Modified;
+                    }
+                    db.SaveChanges();
+                    transaction.Commit();
+                }
+                catch ( Exception ex )
+                {
+                    transaction.Rollback();
+                    Console.WriteLine( "Error occurred: " + ex.Message );
+                }
+            }
             return RedirectToAction("Index");
         }
 

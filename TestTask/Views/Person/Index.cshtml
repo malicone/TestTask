@@ -41,6 +41,12 @@
     </div>
 </div>
 
+@if ( Model.Count() == 0 )
+{
+    <p>
+        @Html.ActionLink( "Create First Record", "Create" )
+    </p>
+}
 <table class="table table-bordered" id="table-people">
     <tr>
         <th>
@@ -54,7 +60,7 @@
         </th>
         <th>
             Options
-        </th>        
+        </th>
     </tr>
 
     @foreach ( var item in Model )
@@ -76,7 +82,7 @@
                     </button>
                     <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                         <a class="dropdown-item" href="#" data-toggle="modal" data-target="#person-modal" data-person-id="@item.Id" data-direction="top">Add Top</a>
-                        <a class="dropdown-item" href="#" data-toggle="modal" data-target="#person-modal" data-person-id="@item.Id" data-direction="bottom">Add Bottom</a>                        
+                        <a class="dropdown-item" href="#" data-toggle="modal" data-target="#person-modal" data-person-id="@item.Id" data-direction="bottom">Add Bottom</a>
                         <a class="dropdown-item js-delete" href="#" data-person-id="@item.Id">Delete</a>
                     </div>
                 </div>
@@ -113,22 +119,25 @@
             </td>
         </tr >`;
     }
+    
+    $(document).ready(function () {
 
-    // clear form after insert!
+        $('#person-modal').on('show.bs.modal', function (event) {
+            $("#person-form").trigger('reset');// clear form before using
 
-    $(document).ready(function () {        
-
-        $('#person-modal').on('show.bs.modal', function (event) {            
             var button = $(event.relatedTarget);
+
+            // pass values from clicked button/item to the form. we'll send the values to controller
             var direction = button.data('direction');
-            $('#Direction').val(direction);    
+            $('#Direction').val(direction);
 
             var personId = button.data('person-id');
-            $('#BasePersonId').val(personId);    
+            $('#BasePersonId').val(personId);
+            // max 20190601: to-do: add direction and person name to the title (it's tip for user to know where new record will be inserted)
         })
 
-        $("#btn-modal-submit").click(function () {            
-            var personFormData = $("#person-form").serialize();            
+        $("#btn-modal-submit").click(function () {
+            var personFormData = $("#person-form").serialize();
             $.ajax({
                 type: "POST",
                 url: "/Person/CreateAndReturn",
@@ -140,18 +149,19 @@
                     if (direction == 'top')
                         row.before(generatePeopleTableRow(result.Id, result.FirstName, result.LastName, new Date(parseInt(result.BirthdayDate.substr(6))).toLocaleDateString()))
                     else
-                        row.after(generatePeopleTableRow(result.Id, result.FirstName, result.LastName, new Date(parseInt(result.BirthdayDate.substr(6))).toLocaleDateString() ));                   
-                    $("#person-modal").modal("hide");                    
+                        row.after(generatePeopleTableRow(result.Id, result.FirstName, result.LastName, new Date(parseInt(result.BirthdayDate.substr(6))).toLocaleDateString()));
+                    $("#person-modal").modal("hide");
                 },
                 error: function (xhr, ajaxOptions, thrownError) {
                     alert("Cannot add the record. Error: " + thrownError);
                 }
-            });            
+            });
         })
 
-        $("#table-people .js-delete").on("click", function () {
+        // use this code to bind handler to dynamically created elements (this wouldn't work: $("#table-people .js-delete").on("click", function () {)
+        $("body").on('click', ".js-delete", function () {
             var button = $(this);
-            if (confirm("Are you sure you want to delete the record?")) {                
+            if (confirm("Are you sure you want to delete the record?")) {
                 $.ajax({
                     type: "POST",
                     url: "/Person/Delete/" + $(this).attr("data-person-id"),

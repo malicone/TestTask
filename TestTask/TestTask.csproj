@@ -165,6 +165,14 @@
     <Compile Include="Migrations\201905301849469_InitialCreate.Designer.cs">
       <DependentUpon>201905301849469_InitialCreate.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201906011417372_NextId_field.cs" />
+    <Compile Include="Migrations\201906011417372_NextId_field.Designer.cs">
+      <DependentUpon>201906011417372_NextId_field.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201906012056530_NextId_index.cs" />
+    <Compile Include="Migrations\201906012056530_NextId_index.Designer.cs">
+      <DependentUpon>201906012056530_NextId_index.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\Person.cs" />
     <Compile Include="Models\TestTaskContext.cs" />
@@ -276,6 +284,12 @@
   <ItemGroup>
     <EmbeddedResource Include="Migrations\201905301849469_InitialCreate.resx">
       <DependentUpon>201905301849469_InitialCreate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201906011417372_NextId_field.resx">
+      <DependentUpon>201906011417372_NextId_field.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201906012056530_NextId_index.resx">
+      <DependentUpon>201906012056530_NextId_index.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

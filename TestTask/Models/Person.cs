@@ -24,9 +24,11 @@ namespace TestTask.Models
         [Display( Name = "B-day" )]
         public DateTime BirthdayDate { get; set; }
 
-        // max 20190601: we can add key to Id field
+        // max 20190601: we can add key to Id field        
+        [Index]
         public int? NextId { get; set; }
 
+        // these fields are used to pass data from the view (form) to controller
         [NotMapped]
         public int BasePersonId { get; set; }
 

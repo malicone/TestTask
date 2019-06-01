@@ -196,3 +196,5 @@ C:\Projects\DataMart\SHERM\TestTask\TestTask\obj\Debug\TestTask.csproj.CoreCompi
 C:\Projects\DataMart\SHERM\TestTask\TestTask\obj\Debug\TestTask.csproj.CopyComplete
 C:\Projects\DataMart\SHERM\TestTask\TestTask\obj\Debug\TestTask.dll
 C:\Projects\DataMart\SHERM\TestTask\TestTask\obj\Debug\TestTask.pdb
+C:\Projects\DataMart\SHERM\TestTask\TestTask\obj\Debug\TestTask.Migrations.NextId_field.resources
+C:\Projects\DataMart\SHERM\TestTask\TestTask\obj\Debug\TestTask.Migrations.NextId_index.resources
