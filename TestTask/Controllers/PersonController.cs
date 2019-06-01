@@ -59,7 +59,7 @@ namespace TestTask.Controllers
         }
 
         [HttpPost]
-        public JsonResult CreateAndReturn( [Bind( Include = "FirstName,LastName,BirthdayDate" )] Person person )
+        public JsonResult CreateAndReturn( [Bind( Include = "FirstName,LastName,BirthdayDate,BasePersonId,Direction" )] Person person )
         {
             if ( ModelState.IsValid )
             {
